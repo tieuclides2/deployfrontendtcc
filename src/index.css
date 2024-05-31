@@ -1,0 +1,96 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: 'Open Sans', sans-serif;
+}
+
+html,
+body,
+#root {
+  background-color: #efefef;
+  height: 100%;
+}
+
+.form-group {
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+  
+}
+
+.btn-entrar {
+  display: flex;
+  justify-content: center;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+  height: 100vh; 
+}
+
+.login-box {
+  width: 500px; /* Define a largura da caixa de login */
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+}
+
+.input-group {
+  margin-bottom: 15px;
+  
+  
+}
+
+.btnForm1 {
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+}
+
+.login-box h2 {
+  display: flex;
+  justify-content: center;
+  
+
+}
+
+
+/*cadastro*/
+
+.cadastro-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.cadastro-box {
+  width: 600px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  text-align: center;
+  
+}
+
+.cadastro-box h2 {
+  padding: 15px;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+.btnForm {
+  display: flex;
+  justify-content: center;
+}

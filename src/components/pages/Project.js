@@ -1,0 +1,245 @@
+import { parse, v4 as uuidv4 } from 'uuid'
+
+import { useParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+
+import styles from './Project.module.css'
+
+import Loading from '../layout/Loading'
+import Container from '../layout/Container'
+import ProjectForm from '../project/ProjectForm'
+import Message from '../layout/Message'
+import ServiceForm from '../service/ServiceForm'
+import ServiceCard from '../service/ServiceCard'
+import ServicePage from './ServicePage'
+
+function Project() {
+  const [project, setProject] = useState([])
+  const [showProjectForm, setShowProjectForm] = useState(false)
+  const [showServiceForm, setShowServiceForm] = useState(false)
+  const [services, setServices] = useState([])
+  const [message, setMessage] = useState('')
+  const [type, setType] = useState('success')
+  const { codigo } = useParams();
+
+
+  useEffect(() => {
+    let url = `https://deploytccpuc.vercel.app/projetos`;
+    // Para ver o loading
+    if (codigo > 0) {
+      url = `https://deploytccpuc.vercel.app/projetos/${codigo}`
+    }
+    setTimeout(
+      () =>
+        fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+          .then((resp) => resp.json())
+          .then((data) => {
+            console.log(data)
+            setProject(data)
+
+          }),
+      0,
+    );
+    setServices([serv()]);
+  }, [codigo])
+
+  const serv = () => {
+    let url = `https://deploytccpuc.vercel.app/services/${codigo}`
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json(); // Parse the JSON from the response
+      })
+      .then(data => {
+        // Work with the fetched data
+        console.log(data);
+      })
+      .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+      });
+  }
+
+  function editPost(project) {
+    // budget validation
+    if (project.budget < project.cost) {
+      setMessage('O Orçamento não pode ser menor que o custo do projeto!')
+      setType('error')
+      return false
+    }
+
+    //   fetch(`https://deploytccpuc.vercel.app/projetos/${project.id}`, {
+    //     method: 'PATCH',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify(project),
+    //   })
+    //     .then((resp) => resp.json())
+    //     .then((data) => {
+    //       setProject(data)
+    //       setShowProjectForm(!showProjectForm)
+    //       setMessage('Projeto atualizado!')
+    //       setType('success')
+    //     })
+  }
+
+  function createService(project) {
+    // last service
+    const lastService = project.services[project.services.length - 1]
+
+    lastService.id = uuidv4()
+
+    const lastServiceCost = lastService.cost
+
+    const newCost = parseFloat(project.cost) + parseFloat(lastServiceCost)
+
+    // maximum value validation
+    if (newCost > parseFloat(project.budget)) {
+      setMessage('Orçamento ultrapassado, verifique o valor do serviço!')
+      setType('error')
+      project.services.pop()
+      return false
+    }
+
+    // add service cost to project cost total
+    project.cost = newCost
+
+    fetch(`https://deploytccpuc.vercel.app/projects/${project.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(project),
+    })
+      .then((resp) => resp.json())
+      .then((data) => {
+        console.log(data)
+        setServices(data.services)
+        setShowServiceForm(!showServiceForm)
+        setMessage('Serviço adicionado!')
+        setType('success')
+      })
+  }
+
+  function removeService(id) {
+
+
+
+    console.log(id)
+
+
+    fetch(`https://deploytccpuc.vercel.app/services/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+
+    })
+      .then((resp) => resp.json())
+      .then((data) => {
+
+        setMessage('Serviço removido com sucesso!')
+      })
+  }
+
+  function toggleProjectForm() {
+    setShowProjectForm(!showProjectForm)
+  }
+
+  function toggleServiceForm() {
+    setShowServiceForm(!showServiceForm)
+  }
+
+  return (
+    <>
+      {project.name ? (
+        <div className={styles.project_details}>
+          <Container customClass="column">
+            {message && <Message type={type} msg={message} />}
+            <div className={styles.details_container}>
+              <h1>Projeto: {project.name}</h1>
+              <button className={styles.btn} onClick={toggleProjectForm}>
+                {!showProjectForm ? 'Editar projeto' : 'Fechar'}
+              </button>
+              {!showProjectForm ? (
+                <div className={styles.form}>
+                  <p>
+                    <span>Categoria:</span> {project.name}
+                  </p>
+                  <p>
+                    <span>Total do orçamento:</span> R${project.budget}
+                  </p>
+                  {/* <p>
+                    <span>Total utilizado:</span> R${project.cost}
+                  </p> */}
+                </div>
+              ) : (
+                <div className={styles.form}>
+                  <ProjectForm
+                    handleSubmit={editPost}
+                    btnText="Concluir Edição"
+                    projectData={project}
+                  />
+                </div>
+              )}
+            </div>
+            <div className={styles.service_form_container}>
+              <h2>Adicione um serviço:</h2>
+              <button className={styles.btn} onClick={toggleServiceForm}>
+                {!showServiceForm ? 'Adicionar Serviço' : 'Fechar'}
+              </button>
+              <div className={styles.form}>
+                {showServiceForm && (
+                  <ServiceForm
+                    handleSubmit={createService}
+                    btnText="Adicionar Serviço"
+                    projectData={project}
+                  />
+                )}
+              </div>
+            </div>
+            <Container customClass="start">
+              {listaLenght(services) > 0 ?
+                services.map((service) => (
+                  service ? <ServiceCard
+                    id={service.id}
+                    name={service.name}
+                    cost={service.cost}
+                    description={service.description}
+                    key={service.id}
+                    handleRemove={() => teste()}
+                  /> : ''
+                )) : ''}
+              {services.length === 0 ? <p>Não há serviços cadastrados.</p> : <ServicePage id={project.id} />}
+            </Container>
+          </Container>
+        </div>
+      ) : (
+        <Loading />
+      )}
+    </>
+  )
+  function listaLenght(lista) {
+    try {
+      return lista.length
+    } catch {
+      return 0;
+
+    }
+  }
+
+  function teste(id){
+    console.log(id);
+  }
+
+}
+
+export default Project
