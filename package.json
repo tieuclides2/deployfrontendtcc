@@ -16,9 +16,7 @@
     "uuid": "^8.3.2",
     "web-vitals": "^1.0.1"
   },
-  "scripts": {
-    // "start": "SET NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
-    // "build": "SET NODE_OPTIONS=--openssl-legacy-provider && react-scripts build",
+  "scripts": {    
     "start": "npm start",
     "build": "npm run build",
     "test": "react-scripts test",
